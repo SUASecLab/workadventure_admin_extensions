@@ -1,5 +1,4 @@
-module github.com/SUASecLab/workadventure-admin-extensions/workadventure-admin-extensions
-
+module github.com/SUASecLab/workadventure_admin_extensions
 go 1.18
 
 require (

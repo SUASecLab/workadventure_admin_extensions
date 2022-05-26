@@ -1,4 +1,4 @@
-package main
+package workadventure_admin_extensions
 
 import (
 	"database/sql"

@@ -13,11 +13,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type UserExistsResponse struct {
-	Exists bool   `json:"exists"`
-	Error  string `json:"error"`
-}
-
 func userExistsQuery(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")

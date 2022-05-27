@@ -1,4 +1,4 @@
-package workadventure_admin_extensions
+package extensions
 
 import "encoding/json"
 

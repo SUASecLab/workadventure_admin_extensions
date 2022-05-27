@@ -1,10 +1,11 @@
-package workadventure_admin_extensions
+package main
 
 import (
 	"database/sql"
 	"encoding/json"
 	"log"
 
+	"github.com/SUASecLab/workadventure_admin_extensions/extensions"
 	_ "github.com/go-sql-driver/mysql"
 
 	"fmt"
@@ -20,7 +21,7 @@ func userExistsQuery(w http.ResponseWriter, r *http.Request) {
 	variables := mux.Vars(r)
 	uuidFromRequest := variables["uuid"]
 
-	isValid, errorMessage := isUUIDValid(uuidFromRequest)
+	isValid, errorMessage := extensions.IsUUIDValid(uuidFromRequest)
 	if !isValid {
 		w.WriteHeader(403)
 		if errorMessage != nil {
@@ -32,7 +33,7 @@ func userExistsQuery(w http.ResponseWriter, r *http.Request) {
 
 	exists, err := userExists(uuidFromRequest)
 	if err != nil {
-		response := UserExistsResponse{
+		response := extensions.UserExistsResponse{
 			Exists: false,
 			Error:  err.Error(),
 		}
@@ -46,7 +47,7 @@ func userExistsQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := UserExistsResponse{
+	response := extensions.UserExistsResponse{
 		Exists: exists,
 	}
 

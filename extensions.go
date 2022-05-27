@@ -1,4 +1,4 @@
-package workadventure_admin_extensions
+package main
 
 import (
 	"log"

@@ -1,4 +1,4 @@
-package workadventure_admin_extensions
+package extensions
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func isUUIDValid(requestedUUID string) (bool, []byte) {
+func IsUUIDValid(requestedUUID string) (bool, []byte) {
 	_, err := uuid.Parse(requestedUUID)
 
 	response := UserExistsResponse{}

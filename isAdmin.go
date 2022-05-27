@@ -1,4 +1,4 @@
-package workadventure_admin_extensions
+package main
 
 import (
 	"database/sql"
@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/SUASecLab/workadventure_admin_extensions/extensions"
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/gorilla/mux"
@@ -19,7 +20,7 @@ func isAdminQuery(w http.ResponseWriter, r *http.Request) {
 	variables := mux.Vars(r)
 	uuidFromRequest := variables["uuid"]
 
-	isValid, errorMessage := isUUIDValid(uuidFromRequest)
+	isValid, errorMessage := extensions.IsUUIDValid(uuidFromRequest)
 	if !isValid {
 		w.WriteHeader(403)
 		if errorMessage != nil {
@@ -31,7 +32,7 @@ func isAdminQuery(w http.ResponseWriter, r *http.Request) {
 
 	isAdmin, err := userIsAdmin(uuidFromRequest)
 	if err != nil {
-		response := UserIsAdminResponse{
+		response := extensions.UserIsAdminResponse{
 			IsAdmin: false,
 			Error:   err.Error(),
 		}
@@ -45,7 +46,7 @@ func isAdminQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := UserIsAdminResponse{
+	response := extensions.UserIsAdminResponse{
 		IsAdmin: isAdmin,
 	}
 

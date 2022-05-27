@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 
@@ -21,17 +20,25 @@ func userExistsQuery(w http.ResponseWriter, r *http.Request) {
 	variables := mux.Vars(r)
 	uuidFromRequest := variables["uuid"]
 
-	isValid, errorMessage := extensions.IsUUIDValid(uuidFromRequest)
+	isValid := extensions.IsUUIDValid(uuidFromRequest)
 	if !isValid {
 		w.WriteHeader(403)
-		if errorMessage != nil {
-			fmt.Fprintf(w, string(errorMessage))
+		response := extensions.UserExistsResponse{
+			Exists: false,
+			Error:  "The provided UUID is invalid",
+		}
+
+		responseToString, marshalErr := json.Marshal(response)
+		if marshalErr != nil {
+			log.Println(marshalErr)
 			return
 		}
+		fmt.Fprintf(w, string(responseToString))
 		return
 	}
 
-	exists, err := userExists(uuidFromRequest)
+	exists, err := queryUserCount(`SELECT COUNT(*) FROM users WHERE uuid = ?`, uuidFromRequest)
+
 	if err != nil {
 		response := extensions.UserExistsResponse{
 			Exists: false,
@@ -58,31 +65,4 @@ func userExistsQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, string(responseToString))
-}
-
-func userExists(uuid string) (bool, error) {
-	db, err := sql.Open("mysql", username+":"+password+"@("+hostname+":3306)/"+dbname+"?parseTime=true")
-	defer db.Close()
-
-	if err != nil {
-		return false, err
-	}
-
-	err = db.Ping()
-	if err != nil {
-		return false, err
-	}
-
-	var count int
-	query := `SELECT COUNT(*) FROM users WHERE uuid = ?`
-
-	err = db.QueryRow(query, uuid).Scan(&count)
-	if err != nil {
-		return false, err
-	}
-
-	if count != 1 {
-		return false, nil
-	}
-	return true, nil
 }

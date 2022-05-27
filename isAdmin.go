@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -20,17 +19,24 @@ func isAdminQuery(w http.ResponseWriter, r *http.Request) {
 	variables := mux.Vars(r)
 	uuidFromRequest := variables["uuid"]
 
-	isValid, errorMessage := extensions.IsUUIDValid(uuidFromRequest)
+	isValid := extensions.IsUUIDValid(uuidFromRequest)
 	if !isValid {
 		w.WriteHeader(403)
-		if errorMessage != nil {
-			fmt.Fprintf(w, string(errorMessage))
+		response := extensions.UserIsAdminResponse{
+			IsAdmin: false,
+			Error:   "The provided UUID is invalid",
+		}
+
+		responseToString, marshalErr := json.Marshal(response)
+		if marshalErr != nil {
+			log.Println(marshalErr)
 			return
 		}
+		fmt.Fprintf(w, string(responseToString))
 		return
 	}
 
-	isAdmin, err := userIsAdmin(uuidFromRequest)
+	isAdmin, err := queryUserCount(`SELECT COUNT(*) FROM tags WHERE tag="admin" and uuid = ?`, uuidFromRequest)
 	if err != nil {
 		response := extensions.UserIsAdminResponse{
 			IsAdmin: false,
@@ -57,31 +63,4 @@ func isAdminQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, string(responseToString))
-}
-
-func userIsAdmin(uuid string) (bool, error) {
-	db, err := sql.Open("mysql", username+":"+password+"@("+hostname+":3306)/"+dbname+"?parseTime=true")
-	defer db.Close()
-
-	if err != nil {
-		return false, err
-	}
-
-	err = db.Ping()
-	if err != nil {
-		return false, err
-	}
-
-	var count int
-	query := `SELECT COUNT(*) FROM tags WHERE tag="admin" and uuid = ?`
-
-	err = db.QueryRow(query, uuid).Scan(&count)
-	if err != nil {
-		return false, err
-	}
-
-	if count != 1 {
-		return false, nil
-	}
-	return true, nil
 }

@@ -22,26 +22,26 @@ func Request(url string) (string, error) {
 	return string(body), nil
 }
 
-func UnmarshalResponse(content string, format interface{}) (interface{}, error) {
+func UnmarshalResponse(content string, format struct{}) (struct{}, error) {
 	bytes := []byte(content)
 
 	err := json.Unmarshal(bytes, &format)
 	if err != nil {
-		return nil, err
+		return struct{}{}, err
 	}
 
 	return format, nil
 }
 
-func UnmarshalledJSONRequestResponse(url string, format interface{}) (interface{}, error) {
+func UnmarshalledJSONRequestResponse(url string, format struct{}) (struct{}, error) {
 	response, err := Request(url)
 	if err != nil {
-		return nil, err
+		return struct{}{}, err
 	}
 
-	result, err := UnmarshalResponse(response, &format)
+	result, err := UnmarshalResponse(response, format)
 	if err != nil {
-		return nil, err
+		return struct{}{}, err
 	}
 
 	return result, nil

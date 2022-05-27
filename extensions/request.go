@@ -32,17 +32,3 @@ func UnmarshalResponse(content string, format struct{}) (struct{}, error) {
 
 	return format, nil
 }
-
-func UnmarshalledJSONRequestResponse(url string, format struct{}) (struct{}, error) {
-	response, err := Request(url)
-	if err != nil {
-		return struct{}{}, err
-	}
-
-	result, err := UnmarshalResponse(response, format)
-	if err != nil {
-		return struct{}{}, err
-	}
-
-	return result, nil
-}

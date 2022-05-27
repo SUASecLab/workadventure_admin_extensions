@@ -1,7 +1,6 @@
 package extensions
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 )
@@ -20,15 +19,4 @@ func Request(url string) (string, error) {
 	}
 
 	return string(body), nil
-}
-
-func UnmarshalResponse(content string, format struct{}) (struct{}, error) {
-	bytes := []byte(content)
-
-	err := json.Unmarshal(bytes, &format)
-	if err != nil {
-		return struct{}{}, err
-	}
-
-	return format, nil
 }

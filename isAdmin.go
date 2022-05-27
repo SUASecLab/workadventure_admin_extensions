@@ -36,6 +36,30 @@ func isAdminQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if account exists
+	exists, err := queryUserCount(`SELECT COUNT(*) FROM users WHERE uuid = ?`, uuidFromRequest)
+	if err != nil || !exists {
+		response := extensions.UserIsAdminResponse{
+			IsAdmin: false,
+		}
+
+		if !exists {
+			response.Error = "User does not exist"
+		}
+
+		if err != nil {
+			response.Error = err.Error()
+		}
+
+		responseToString, marshalErr := json.Marshal(response)
+		if marshalErr != nil {
+			log.Println(marshalErr)
+			return
+		}
+		fmt.Fprintf(w, string(responseToString))
+		return
+	}
+
 	isAdmin, err := queryUserCount(`SELECT COUNT(*) FROM tags WHERE tag="admin" and uuid = ?`, uuidFromRequest)
 	if err != nil {
 		response := extensions.UserIsAdminResponse{

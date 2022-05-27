@@ -12,11 +12,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type UserIsAdminResponse struct {
-	IsAdmin bool   `json:"isAdmin"`
-	Error   string `json:"error"`
-}
-
 func isAdminQuery(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")

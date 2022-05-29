@@ -6,85 +6,69 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/SUASecLab/workadventure_admin_extensions/db"
 	"github.com/SUASecLab/workadventure_admin_extensions/extensions"
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/gorilla/mux"
 )
 
-func isAdminQuery(w http.ResponseWriter, r *http.Request) {
+func isAdminHandler(w http.ResponseWriter, r *http.Request) {
+	//Send HTTP headers for CORS and enable JSON encoding
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 
+	// Get UUID from request
 	variables := mux.Vars(r)
 	uuidFromRequest := variables["uuid"]
 
+	// Create basic response
+	response := extensions.UserIsAdminResponse{}
+
+	// Check, if database is defined. If not, we are running a test.
+	// Then, use the mock interface.
+	if database == nil {
+		database = db.MockDatabase{}
+	}
+
+	// Check if UUID is valid
 	isValid := extensions.IsUUIDValid(uuidFromRequest)
 	if !isValid {
 		w.WriteHeader(403)
-		response := extensions.UserIsAdminResponse{
-			IsAdmin: false,
-			Error:   "The provided UUID is invalid",
-		}
-
-		responseToString, marshalErr := json.Marshal(response)
-		if marshalErr != nil {
-			log.Println(marshalErr)
-			return
-		}
-		fmt.Fprintf(w, string(responseToString))
-		return
-	}
-
-	// Check if account exists
-	exists, err := queryUserCount(`SELECT COUNT(*) FROM users WHERE uuid = ?`, uuidFromRequest)
-	if err != nil || !exists {
-		response := extensions.UserIsAdminResponse{
-			IsAdmin: false,
-		}
-
-		if !exists {
-			response.Error = "User does not exist"
-		}
+		response.IsAdmin = false
+		response.Error = "The provided UUID is invalid"
+	} else {
+		// Check if user exists
+		exists, err := database.QueryUserInformation(db.UserExists, uuidFromRequest)
 
 		if err != nil {
+			response.IsAdmin = false
 			response.Error = err.Error()
-		}
+		} else if !exists {
+			response.IsAdmin = false
+			response.Error = "User does not exist"
+		} else {
+			// Check if user is admin
+			isAdmin, err := database.QueryUserInformation(db.UserIsAdmin, uuidFromRequest)
 
-		responseToString, marshalErr := json.Marshal(response)
-		if marshalErr != nil {
-			log.Println(marshalErr)
-			return
+			if err != nil {
+				response.IsAdmin = false
+				response.Error = err.Error()
+			} else if !isAdmin {
+				response.IsAdmin = false
+			} else {
+				response.IsAdmin = true
+			}
 		}
-		fmt.Fprintf(w, string(responseToString))
-		return
 	}
 
-	isAdmin, err := queryUserCount(`SELECT COUNT(*) FROM tags WHERE tag="admin" and uuid = ?`, uuidFromRequest)
-	if err != nil {
-		response := extensions.UserIsAdminResponse{
-			IsAdmin: false,
-			Error:   err.Error(),
-		}
-
-		responseToString, marshalErr := json.Marshal(response)
-		if marshalErr != nil {
-			log.Println(marshalErr)
-			return
-		}
-		fmt.Fprintf(w, string(responseToString))
-		return
-	}
-
-	response := extensions.UserIsAdminResponse{
-		IsAdmin: isAdmin,
-	}
-
+	// Encode JSON response
 	responseToString, err := json.Marshal(response)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
+	// Output response
 	fmt.Fprintf(w, string(responseToString))
 }

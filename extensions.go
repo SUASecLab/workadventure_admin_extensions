@@ -13,6 +13,7 @@ var (
 	database db.Database
 
 	externalToken string
+	noVNCPassword string
 )
 
 func main() {
@@ -23,6 +24,7 @@ func main() {
 	mysqlHostname := os.Getenv("DB_HOSTNAME")
 	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
 	externalToken = os.Getenv("EXTERNAL_TOKEN")
+	noVNCPassword = os.Getenv("NOVNC_PASSWORD")
 
 	if len(mysqlUser) == 0 || len(mysqlPassword) == 0 ||
 		len(mysqlHostname) == 0 || len(mysqlDatabase) == 0 {
@@ -41,6 +43,7 @@ func main() {
 	r.HandleFunc("/userExists/{token}", userExistsHandler)
 	r.HandleFunc("/isAdmin/{token}", isAdminHandler)
 	r.HandleFunc("/addNameToToken/", addNameHandler)
+	r.HandleFunc("/getNoVNCPassword/", noVNCPasswordHandler)
 
 	log.Println("Extensions service is listening on port 8080")
 	err := http.ListenAndServe(":8080", r)

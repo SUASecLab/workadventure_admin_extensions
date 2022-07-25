@@ -40,6 +40,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/userExists/{token}", userExistsHandler)
 	r.HandleFunc("/isAdmin/{token}", isAdminHandler)
+	r.HandleFunc("/addNameToToken/", addNameHandler)
 
 	log.Println("Extensions service is listening on port 8080")
 	err := http.ListenAndServe(":8080", r)

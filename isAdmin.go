@@ -38,7 +38,7 @@ func isAdminHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// search for admin tag
+	// Search for admin tag
 	var isAdmin bool
 	for _, tag := range tagsSlice {
 		if tag == "admin" {

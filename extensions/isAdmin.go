@@ -1,15 +1,8 @@
 package extensions
 
-func UserIsAdmin(adminExtensionsURL, uuid string) (bool, string) {
-	// Check if the uuid is valid
-	isValid := IsUUIDValid(uuid)
-	if !isValid {
-		msg := "Invalid user ID"
-		return false, msg
-	}
-
+func UserIsAdmin(adminExtensionsURL, token string) (bool, string) {
 	// Check whether user is admin
-	response, err := Request(adminExtensionsURL + "/isAdmin/" + uuid)
+	response, err := Request(adminExtensionsURL + "/isAdmin/" + token)
 	if err != nil {
 		msg := "Could not connect to admin services:"
 		return false, msg

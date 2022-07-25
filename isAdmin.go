@@ -30,7 +30,7 @@ func isAdminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tags, exists := claims["tags"]
-	tagsSlice, okay := tags.([]string)
+	tagsInterface, okay := tags.([]interface{})
 
 	if !exists || !okay {
 		w.WriteHeader(http.StatusForbidden)
@@ -38,10 +38,10 @@ func isAdminHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Search for admin tag
 	var isAdmin bool
-	for _, tag := range tagsSlice {
-		if tag == "admin" {
+	for _, currentInterface := range tagsInterface {
+		tag, ok := currentInterface.(string)
+		if ok && tag == "admin" {
 			isAdmin = true
 			break
 		}

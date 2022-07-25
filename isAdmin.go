@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/SUASecLab/workadventure_admin_extensions/db"
 	"github.com/SUASecLab/workadventure_admin_extensions/extensions"
 	_ "github.com/go-sql-driver/mysql"
 
@@ -18,53 +17,45 @@ func isAdminHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 
-	// Get UUID from request
+	// Validate tags -> if we can decode the token, it is valid.
+	// The token is handed out by admin -> if valid, then the tags really exist.
 	variables := mux.Vars(r)
-	uuidFromRequest := variables["uuid"]
+	token := variables["token"]
 
-	// Create basic response
-	response := extensions.UserIsAdminResponse{}
-
-	// Check, if database is defined. If not, we are running a test.
-	// Then, use the mock interface.
-	if database == nil {
-		database = db.MockDatabase{}
+	success, claims := extensions.DecodeToken(token, externalToken)
+	if !success {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintln(w, "The provided token is invalid")
+		return
 	}
 
-	// Check if UUID is valid
-	isValid := extensions.IsUUIDValid(uuidFromRequest)
-	if !isValid {
-		w.WriteHeader(403)
-		response.IsAdmin = false
-		response.Error = "The provided UUID is invalid"
-	} else {
-		// Check if user exists
-		exists, err := database.QueryUserInformation(db.UserExists, uuidFromRequest)
+	tags, exists := claims["tags"]
+	tagsSlice, okay := tags.([]string)
 
-		if err != nil {
-			response.IsAdmin = false
-			response.Error = err.Error()
-		} else if !exists {
-			response.IsAdmin = false
-			response.Error = "User does not exist"
-		} else {
-			// Check if user is admin
-			isAdmin, err := database.QueryUserInformation(db.UserIsAdmin, uuidFromRequest)
+	if !exists || !okay {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintln(w, "Could not read tags")
+		return
+	}
 
-			if err != nil {
-				response.IsAdmin = false
-				response.Error = err.Error()
-			} else if !isAdmin {
-				response.IsAdmin = false
-			} else {
-				response.IsAdmin = true
-			}
+	// search for admin tag
+	var isAdmin bool
+	for _, tag := range tagsSlice {
+		if tag == "admin" {
+			isAdmin = true
+			break
 		}
+	}
+
+	// Create response
+	response := extensions.UserIsAdminResponse{
+		IsAdmin: isAdmin,
 	}
 
 	// Encode JSON response
 	responseToString, err := json.Marshal(response)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}

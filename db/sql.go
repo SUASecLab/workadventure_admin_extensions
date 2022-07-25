@@ -17,8 +17,6 @@ func getQueryStringSQL(queryType QueryType) string {
 	switch queryType {
 	case UserExists:
 		return `SELECT COUNT(*) FROM users WHERE uuid = ?`
-	case UserIsAdmin:
-		return `SELECT COUNT(*) FROM tags WHERE tag="admin" and uuid = ?`
 	}
 	return ""
 }

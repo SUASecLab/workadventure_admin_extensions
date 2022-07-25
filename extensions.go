@@ -11,6 +11,8 @@ import (
 
 var (
 	database db.Database
+
+	externalToken string
 )
 
 func main() {
@@ -20,6 +22,7 @@ func main() {
 	mysqlPassword := os.Getenv("MYSQL_PASSWORD")
 	mysqlHostname := os.Getenv("DB_HOSTNAME")
 	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
+	externalToken = os.Getenv("EXTERNAL_TOKEN")
 
 	if len(mysqlUser) == 0 || len(mysqlPassword) == 0 ||
 		len(mysqlHostname) == 0 || len(mysqlDatabase) == 0 {
@@ -35,8 +38,8 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/userExists/{uuid}", userExistsHandler)
-	r.HandleFunc("/isAdmin/{uuid}", isAdminHandler)
+	r.HandleFunc("/userExists/{token}", userExistsHandler)
+	r.HandleFunc("/isAdmin/{token}", isAdminHandler)
 
 	log.Println("Extensions service is listening on port 8080")
 	err := http.ListenAndServe(":8080", r)

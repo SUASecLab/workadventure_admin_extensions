@@ -20,7 +20,23 @@ func userExistsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get UUID from request
 	variables := mux.Vars(r)
-	uuidFromRequest := variables["uuid"]
+	token := variables["token"]
+
+	success, claims := extensions.DecodeToken(token, externalToken)
+	if !success {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintln(w, "The provided token is invalid")
+		return
+	}
+
+	uuid, exists := claims["uuid"]
+	uuidString, okay := uuid.(string)
+
+	if !exists || !okay {
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintln(w, "No or invalid user identifier provided")
+		return
+	}
 
 	// Create basic response
 	response := extensions.UserExistsResponse{}
@@ -32,14 +48,14 @@ func userExistsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if UUID is valid
-	isValid := extensions.IsUUIDValid(uuidFromRequest)
+	isValid := extensions.IsUUIDValid(uuidString)
 	if !isValid {
-		w.WriteHeader(403)
+		w.WriteHeader(http.StatusForbidden)
 		response.Exists = false
 		response.Error = "The provided UUID is invalid"
 	} else {
 		// Check if user exists
-		exists, err := database.QueryUserInformation(db.UserExists, uuidFromRequest)
+		exists, err := database.QueryUserInformation(db.UserExists, uuidString)
 
 		if err != nil {
 			response.Exists = false
@@ -52,6 +68,7 @@ func userExistsHandler(w http.ResponseWriter, r *http.Request) {
 	// Encode JSON response
 	responseToString, err := json.Marshal(response)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
 		return
 	}

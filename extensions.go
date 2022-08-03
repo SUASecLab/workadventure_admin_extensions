@@ -14,6 +14,9 @@ var (
 
 	externalToken string
 	noVNCPassword string
+
+	bbbSharedSecret string
+	bbbUrl          string
 )
 
 func main() {
@@ -21,6 +24,9 @@ func main() {
 
 	externalToken = os.Getenv("EXTERNAL_TOKEN")
 	noVNCPassword = os.Getenv("NOVNC_PASSWORD")
+
+	bbbUrl = os.Getenv("BBB_URL")
+	bbbSharedSecret = os.Getenv("BBB_SECRET")
 
 	mongoUsername := os.Getenv("MONGO_USERNAME")
 	mongoPassword := os.Getenv("MONGO_PASSWORD")
@@ -45,6 +51,7 @@ func main() {
 	r.HandleFunc("/isAdmin/{token}", isAdminHandler)
 	r.HandleFunc("/addNameToToken/", addNameHandler)
 	r.HandleFunc("/getNoVNCPassword/", noVNCPasswordHandler)
+	r.HandleFunc("/bigbluebutton/", getBBBUrl)
 
 	log.Println("Extensions service is listening on port 8080")
 	err := http.ListenAndServe(":8080", r)

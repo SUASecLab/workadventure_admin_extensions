@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/SUASecLab/workadventure_admin_extensions/extensions"
-	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/gorilla/mux"
 )

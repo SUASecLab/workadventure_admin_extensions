@@ -19,23 +19,24 @@ var (
 func main() {
 	log.SetFlags(0)
 
-	mysqlUser := os.Getenv("MYSQL_USER")
-	mysqlPassword := os.Getenv("MYSQL_PASSWORD")
-	mysqlHostname := os.Getenv("DB_HOSTNAME")
-	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
 	externalToken = os.Getenv("EXTERNAL_TOKEN")
 	noVNCPassword = os.Getenv("NOVNC_PASSWORD")
 
-	if len(mysqlUser) == 0 || len(mysqlPassword) == 0 ||
-		len(mysqlHostname) == 0 || len(mysqlDatabase) == 0 {
+	mongoUsername := os.Getenv("MONGO_USERNAME")
+	mongoPassword := os.Getenv("MONGO_PASSWORD")
+	mongoHost := os.Getenv("MONGO_HOST")
+	mongoDb := os.Getenv("MONGO_DB")
+
+	if len(mongoUsername) == 0 || len(mongoPassword) == 0 ||
+		len(mongoHost) == 0 || len(mongoDb) == 0 {
 		log.Println("No database information specified. Using mock database for debugging.")
 		database = db.MockDatabase{}
 	} else {
-		database = db.SQLDatabase{
-			Username: mysqlUser,
-			Password: mysqlPassword,
-			Hostname: mysqlHostname,
-			Dbname:   mysqlDatabase,
+		database = db.MongoDatabase{
+			Username: mongoUsername,
+			Password: mongoPassword,
+			Hostname: mongoHost,
+			Dbname:   mongoDb,
 		}
 	}
 

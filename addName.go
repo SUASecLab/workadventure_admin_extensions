@@ -18,6 +18,12 @@ func addNameHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	token := r.URL.Query().Get("token")
 
+	if len(name) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintln(w, "No name provided")
+		return
+	}
+
 	success, claims := extensions.DecodeToken(token, externalToken)
 	if !success {
 		w.WriteHeader(http.StatusForbidden)

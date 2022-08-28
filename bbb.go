@@ -35,26 +35,21 @@ func getBBBUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	success, userClaims := extensions.DecodeToken(token, externalToken)
-	if !success {
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintln(w, "The provided token is invalid")
-		return
-	}
-
-	isModerator, ok := userClaims["moderator"].(bool)
-	if !ok {
+	isModerator, err := extensions.AuthRequestAndDecision("http://" + sidecarUrl +
+		"/auth?token=" + token + "&service=bbbModerator")
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not authorize user")
+		log.Println("Could not authorize user:", err)
 		return
 	}
-
 	// generate room
 	// pasword are secured by being hashed with bbb's secret
 	generateRoomUrl := bbbUrl + "api/create?" +
 		bbbApi("create", "name="+meetingName+"&meetingID="+meetingID+
 			"&attendeePW=attendeePW&moderatorPW=moderatorPW")
 
-	_, err := extensions.Request(generateRoomUrl)
+	_, err = extensions.Request(generateRoomUrl)
 
 	if err != nil {
 		log.Println("Could not generate BBB meeting", err)

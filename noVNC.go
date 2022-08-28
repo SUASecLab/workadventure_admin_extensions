@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/SUASecLab/workadventure_admin_extensions/extensions"
@@ -15,9 +16,17 @@ func noVNCPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	// Get token
 	token := r.URL.Query().Get("token")
 
-	// Validate token
-	success, _ := extensions.DecodeToken(token, externalToken)
-	if !success {
+	// Authorize
+	allowed, err := extensions.AuthRequestAndDecision("http://" + sidecarUrl +
+		"/auth?token=" + token + "&service=noVNC")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error while authorizing")
+		log.Println("Could not authorize user:", err)
+		return
+	}
+
+	if !allowed {
 		w.WriteHeader(http.StatusForbidden)
 		fmt.Fprintln(w, "The provided token is invalid")
 		return

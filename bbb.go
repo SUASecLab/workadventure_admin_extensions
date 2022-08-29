@@ -35,7 +35,7 @@ func getBBBUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isModerator, err := extensions.AuthRequestAndDecision("http://" + sidecarUrl +
+	moderatorDecision, err := extensions.GetAuthDecision("http://" + sidecarUrl +
 		"/auth?token=" + token + "&service=bbbModerator")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -58,7 +58,7 @@ func getBBBUrl(w http.ResponseWriter, r *http.Request) {
 	// generate join link
 	var generateJoinUrl string
 
-	if isModerator {
+	if moderatorDecision.Allowed {
 		generateJoinUrl = bbbUrl + "api/join?" +
 			bbbApi("join", "fullName="+userName+"&meetingID="+meetingID+
 				"&password=moderatorPW")

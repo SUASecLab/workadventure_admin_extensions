@@ -17,7 +17,7 @@ func noVNCPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 
 	// Authorize
-	allowed, err := extensions.AuthRequestAndDecision("http://" + sidecarUrl +
+	noVNCDecision, err := extensions.GetAuthDecision("http://" + sidecarUrl +
 		"/auth?token=" + token + "&service=noVNC")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -26,7 +26,7 @@ func noVNCPasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !allowed {
+	if !noVNCDecision.Allowed {
 		w.WriteHeader(http.StatusForbidden)
 		fmt.Fprintln(w, "The provided token is invalid")
 		return

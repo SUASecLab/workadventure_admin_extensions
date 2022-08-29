@@ -21,6 +21,8 @@ func GetAuthDecision(url string) (AuthDecision, error) {
 
 	err = json.Unmarshal(bytes, &result)
 	if err != nil {
+		errorMsg := "Could not interpret userinfo result"
+		log.Println(errorMsg, err)
 		return AuthDecision{Allowed: false}, err
 	}
 

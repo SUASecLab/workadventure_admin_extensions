@@ -26,7 +26,8 @@ func IssueToken(url string) (Issuance, error) {
 
 	err = json.Unmarshal(bytes, &result)
 	if err != nil {
-		errorMsg := "Could not interpret auth response"
+		errorMsg := "Could not interpret issuance result"
+		log.Println(errorMsg, err)
 		return Issuance{
 			Error: errorMsg,
 			Token: "",

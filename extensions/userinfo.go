@@ -25,7 +25,8 @@ func GetUserInfo(url string) (UserInfo, error) {
 
 	err = json.Unmarshal(bytes, &result)
 	if err != nil {
-		log.Println("Could not unmarshal userinfo result:", err)
+		errorMsg := "Could not interpret userinfo result"
+		log.Println(errorMsg, err)
 		return UserInfo{
 			Exists:  false,
 			IsAdmin: false,

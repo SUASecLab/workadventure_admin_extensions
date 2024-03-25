@@ -9,12 +9,23 @@ import (
 )
 
 var (
+	// URL of the sidecar
 	sidecarUrl string
 
+	// Password for NoVNC
 	noVNCPassword string
 
+	// BBB credentials
 	bbbSharedSecret string
 	bbbUrl          string
+
+	// Jitsi credentials
+	jitsiKey    string
+	jitsiIssuer string
+	jitsiUrl    string
+
+	// Whether to replace BBB by Jitsi
+	jitsiReplacesBBB bool
 )
 
 func main() {
@@ -24,8 +35,17 @@ func main() {
 
 	noVNCPassword = os.Getenv("NOVNC_PASSWORD")
 
-	bbbUrl = os.Getenv("BBB_URL")
 	bbbSharedSecret = os.Getenv("BBB_SECRET")
+	bbbUrl = os.Getenv("BBB_URL")
+
+	jitsiKey = os.Getenv("SECRET_JITSI_KEY")
+	jitsiIssuer = os.Getenv("JITSI_ISS")
+	jitsiUrl = os.Getenv("JITSI_URL")
+	jitsiReplacesBBBValue := os.Getenv("JITSI_REPLACES_BBB")
+	if jitsiReplacesBBBValue == "true" {
+		log.Println("Jitsi replaces BigBlueButton")
+		jitsiReplacesBBB = true
+	}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/getNoVNCPassword/", noVNCPasswordHandler)

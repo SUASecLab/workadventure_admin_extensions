@@ -6,8 +6,9 @@ import (
 )
 
 type UserInfo struct {
-	Exists  bool `json:"exists"`
-	IsAdmin bool `json:"isAdmin"`
+	Exists  bool   `json:"exists"`
+	IsAdmin bool   `json:"isAdmin"`
+	UUID    string `json:"uuid"`
 }
 
 func GetUserInfo(url string) (UserInfo, error) {

@@ -12,5 +12,7 @@ FROM scratch
 COPY --from=golang-builder /src/app/extensions-bin /extensions
 COPY --from=golang-builder /etc/passwd /etc/passwd
 
+COPY --chown=extensions:extensions templates/jitsi.html templates/jitsi.html
+
 USER extensions
 CMD [ "/extensions" ]

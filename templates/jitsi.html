@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<head>
+    <script src="https://{{.JitsiUrl}}/external_api.js"></script>
+    <style>
+        body {
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        div {
+            padding: 0;
+            margin: 0;
+            float: left;
+            display: inline;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+
+    </div>
+    <script>
+        const domain = "{{.JitsiUrl}}";
+        const options = {
+            roomName: "{{.RoomName}}",
+            width: "100%",
+            height: "100%",
+            parentNode: document.querySelector("#container"),
+            jwt: "{{.Jwt}}",
+            configOverwrite: { startWithAudioMuted: true },
+            userInfo: {
+                displayName: "{{.UserName}}"
+            },
+        }
+        const api = new JitsiMeetExternalAPI(domain, options)
+    </script>
+</body>

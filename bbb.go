@@ -6,10 +6,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/SUASecLab/workadventure_admin_extensions/extensions"
-	"github.com/kataras/jwt"
 )
 
 func bbbApi(apiCall, queryString string) string {
@@ -48,32 +46,6 @@ func generateBBBUrl(meetingName, meetingID, userName string, moderatorDecision e
 	return generateJoinUrl
 }
 
-func generateJitsiUrl(meetingID, userName string, moderatorDecision extensions.AuthDecision) string {
-	unixTime := time.Now().Unix()
-	token, err := jwt.Sign(jwt.HS256, []byte(jitsiKey), map[string]interface{}{
-		"context": map[string]interface{}{
-			"user": map[string]interface{}{
-				"name": userName,
-			},
-		},
-		"nbf":       unixTime - 10,
-		"aud":       "jitsi",
-		"iss":       jitsiIssuer,
-		"room":      "*",
-		"moderator": moderatorDecision.Allowed,
-		"iat":       unixTime,
-		"exp":       unixTime + 60,
-	})
-
-	if err != nil {
-		errorMessage := "Could not generate Jitsi token"
-		log.Println(errorMessage, err)
-		return ""
-	} else {
-		return "https://" + jitsiUrl + "/" + meetingID + "?jwt=" + string(token)
-	}
-}
-
 func getBBBUrl(w http.ResponseWriter, r *http.Request) {
 	//Send HTTP headers for CORS and enable JSON encoding
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -92,22 +64,27 @@ func getBBBUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	moderatorDecision, err := extensions.GetAuthDecision("http://" + sidecarUrl +
-		"/auth?token=" + token + "&service=bbbModerator")
-
 	var joinUrl string
 
 	if jitsiReplacesBBB {
-		joinUrl = generateJitsiUrl(meetingID, userName, moderatorDecision)
+		// redirect user to jitsi handler
+		joinUrl = extensionsSubdir + "/jitsi/?roomName=" + meetingID + "&userName=" + userName + "&token=" + token
 	} else {
+		// does the user have moderator rights?
+		moderatorDecision, err := extensions.GetAuthDecision("http://" + sidecarUrl +
+			"/auth?token=" + token + "&service=bbbModerator")
+
+		// did the query succeed?
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Could not authorize user")
+			log.Println("Could not authorize user for BBB:", err)
+			return
+		}
+
+		// if so, generate the url
 		joinUrl = generateBBBUrl(meetingName, meetingID, userName, moderatorDecision)
 	}
 
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not authorize user")
-		log.Println("Could not authorize user:", err)
-		return
-	}
 	fmt.Fprintln(w, joinUrl)
 }

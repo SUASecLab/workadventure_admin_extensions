@@ -20,9 +20,7 @@ var (
 	bbbUrl          string
 
 	// Jitsi credentials
-	jitsiKey    string
-	jitsiIssuer string
-	jitsiUrl    string
+	jitsiUrl string
 
 	// Whether to replace BBB by Jitsi
 	jitsiReplacesBBB bool
@@ -41,8 +39,6 @@ func main() {
 	bbbSharedSecret = os.Getenv("BBB_SECRET")
 	bbbUrl = os.Getenv("BBB_URL")
 
-	jitsiKey = os.Getenv("SECRET_JITSI_KEY")
-	jitsiIssuer = os.Getenv("JITSI_ISS")
 	jitsiUrl = os.Getenv("JITSI_URL")
 	jitsiReplacesBBBValue := os.Getenv("JITSI_REPLACES_BBB")
 	if jitsiReplacesBBBValue == "true" {

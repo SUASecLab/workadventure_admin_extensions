@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <head>
-    <script src="https://{{.JitsiUrl}}/external_api.js"></script>
+    <script id="jitsiScript" src="https://{{.JitsiUrl}}/external_api.js"></script>
     <style>
         body {
             height: 100vh;
@@ -25,18 +25,52 @@
 
     </div>
     <script>
+        // load url
+        const jitsiScript = document.createElement("script");
         const domain = "{{.JitsiUrl}}";
+        const scriptURL = "https://" + domain + "/external_api.js";
+        jitsiScript.onload = () => {
+            console.log("Loaded Jitsi API");
+        }
+        jitsiScript.onerror = (event) => {
+            console.log("Could not load Jitsi API:");
+            console.log(event);
+        }
+        document.head.appendChild(jitsiScript);
+
+        // create jitsi room
         const options = {
             roomName: "{{.RoomName}}",
+            jwt: "{{.Jwt}}",
             width: "100%",
             height: "100%",
             parentNode: document.querySelector("#container"),
-            jwt: "{{.Jwt}}",
-            configOverwrite: { startWithAudioMuted: true },
+            configOverwrite: {
+                startWithAudioMuted: true,
+                startWithVideoMuted: true,
+                prejoinPageEnabled: false,
+                disableDeepLinking: false,
+                gravatar: {
+                    disabled: true,
+                },
+            },
             userInfo: {
                 displayName: "{{.UserName}}"
             },
-        }
-        const api = new JitsiMeetExternalAPI(domain, options)
+        };
+        setTimeout(() => {
+            function leftConference() {
+                document.getElementById("container").innerHTML = "You left the conference."
+                api.removeListener("videoConferenceLeft", leftConference);
+                api.removeListener("readyToClose", leftConference);
+            }
+            const api = new JitsiMeetExternalAPI(domain, options);
+            api.addListener("videoConferenceLeft", leftConference);
+            api.addListener("readyToClose", leftConference);
+            api.executeCommand("setNoiseSuppressionEnabled", {
+                enabled: window.navigator.userAgent.toLowerCase().indexOf("firefox") === -1,
+            });
+
+        }, 250);
     </script>
 </body>

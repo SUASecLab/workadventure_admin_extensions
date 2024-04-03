@@ -1,15 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"text/template"
-	"time"
 
 	"github.com/SUASecLab/workadventure_admin_extensions/extensions"
-	"github.com/kataras/jwt"
 )
 
 type JitsiData struct {
@@ -24,44 +21,16 @@ func createJitsiInstance(w http.ResponseWriter, r *http.Request) {
 	userName := url.QueryEscape(r.URL.Query().Get("userName"))
 	receivedToken := url.QueryEscape(r.URL.Query().Get("token"))
 
-	// does the user have moderator rights?
-	moderatorDecision, err := extensions.GetAuthDecision("http://" + sidecarUrl +
-		"/auth?token=" + receivedToken + "&service=jitsiModerator")
-
-	// did the query succeed?
+	issuance, err := extensions.IssueToken("http://" + sidecarUrl + "/issuance?name=" + userName + "&token=" + receivedToken)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not authorize user")
-		log.Println("Could not authorize user for Jitsi:", err)
-		return
-	}
-
-	unixTime := time.Now().Unix()
-	jitsiToken, err := jwt.Sign(jwt.HS256, []byte(jitsiKey), map[string]interface{}{
-		"context": map[string]interface{}{
-			"user": map[string]interface{}{
-				"name": userName,
-			},
-		},
-		"nbf":       unixTime - 10,
-		"aud":       "jitsi",
-		"iss":       jitsiIssuer,
-		"room":      "*",
-		"moderator": moderatorDecision.Allowed,
-		"iat":       unixTime,
-		"exp":       unixTime + 60,
-	})
-
-	if err != nil {
-		fmt.Fprintf(w, "Could not authorize user")
-		log.Println("Could not generate Jitsi token", err)
+		log.Println("Could not get Jitsi token: ", err)
 		return
 	}
 
 	jitsiData := JitsiData{
 		JitsiUrl: jitsiUrl,
 		RoomName: roomName,
-		Jwt:      string(jitsiToken),
+		Jwt:      string(issuance.Token),
 		UserName: userName,
 	}
 

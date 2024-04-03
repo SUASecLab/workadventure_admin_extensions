@@ -25,18 +25,8 @@
 
     </div>
     <script>
-        // load url
-        const jitsiScript = document.createElement("script");
+        // jitsi url
         const domain = "{{.JitsiUrl}}";
-        const scriptURL = "https://" + domain + "/external_api.js";
-        jitsiScript.onload = () => {
-            console.log("Loaded Jitsi API");
-        }
-        jitsiScript.onerror = (event) => {
-            console.log("Could not load Jitsi API:");
-            console.log(event);
-        }
-        document.head.appendChild(jitsiScript);
 
         // create jitsi room
         const options = {

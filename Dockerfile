@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine as golang-builder
+FROM golang:1.24-alpine AS golang-builder
 
 RUN addgroup -S extensions && adduser -S extensions -G extensions
 

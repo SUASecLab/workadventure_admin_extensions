@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,7 +12,7 @@ import (
 
 func bbbApi(apiCall, queryString string) string {
 	securityString := apiCall + queryString + bbbSharedSecret
-	checksum := sha1.Sum([]byte(securityString))
+	checksum := sha256.Sum256([]byte(securityString))
 	stringChecksum := fmt.Sprintf("%x", checksum)
 	return queryString + "&checksum=" + stringChecksum
 }
